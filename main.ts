@@ -37,8 +37,13 @@ export default class ClassroomClient extends Plugin {
 				console.log("Client: got " + IPAddress);
 				this.serverIPAddress = IPAddress;
 				//this.socket = new net.Socket();
-				const packet = new Packet(Packet.REQUEST_TO_JOIN, "username");
-				packet.send(IPAddress, 59898);
+				const packet = new Packet(Packet.CHECK, "checking connection");
+				if (packet.checkConnection(IPAddress, 59898)) {
+					const packet = new Packet(Packet.REQUEST_TO_JOIN, "username");
+					packet.send(IPAddress, 59898);
+				} else {
+					new Notice("Could not connect to server at " + IPAddress);
+				}
 				this.keystring = "";
 				this.registerDomEvent(window, 'keydown', this.handleKeys);
 
