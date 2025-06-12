@@ -1,3 +1,4 @@
+import { Acknowledgement } from "./Acknowledgement";
 import { Socket } from "net";
 
 export class Packet {
@@ -7,6 +8,7 @@ export class Packet {
     static readonly QUIT = 0x00;
     static readonly REQUEST_TO_JOIN = 0x01;
     static readonly TEXT = 0x02;
+    static readonly CONTENT = 0x03;
 
     command: number;
     data: any;
@@ -16,42 +18,37 @@ export class Packet {
         this.data = d;
     }
 
-    checkConnection(destination: string, port: number): boolean{
-        console.log("Checking connection to " + destination + ":" + port);
-        const socket = new Socket();
-        socket.connect(port, destination, () => {
-            console.log('Connected to server');
-            const buffer = new Uint8Array(2 + this.data.length);
-            buffer[0] = Packet.CHECK;
-            buffer[1] = this.data.length;
-            for (let i = 0; i < this.data.length; i++) {
-                buffer[2 + i] = this.data.charCodeAt(i);}    
-            socket.write(buffer);
-            socket.destroy();
-            return true;
-        });
-        socket.on('error', (err) => {
-            console.error('Connection error:', err);
-            return false;
-        });
-    }
-
-    send( destination: string, port: number) {
+    async send( destination: string, port: number): number {
         console.log("Sending packet to " + destination + ":" + port);
         console.log("Command: " + this.command);
         console.log("Data length: " + this.data.length);
         console.log("Data string: " + this.data.toString());
-        const socket = new Socket();
-        socket.connect(port, destination, () => {
-            console.log('Connected to server');
+                    
+        let socket = new Socket();
+
+        let ack = Acknowledgement.ERROR;
+        socket.connect(port, destination, async () => {
+            console.log('Connected to server, sending packet...');
             const buffer = new Uint8Array(2 + this.data.length);
             buffer[0] = this.command;
             buffer[1] = this.data.length;
             for (let i = 0; i < this.data.length; i++) {
-                buffer[2 + i] = this.data.charCodeAt(i);}    
-            socket.write(buffer);
-            socket.destroy();
+                buffer[2 + i] = this.data.charCodeAt(i);
+            } 
+            await socket.write(buffer);
+            console.log("Packet sent, waiting for acknowledgement...");
+
+            ack = await Acknowledgement.receive(socket); 
+            if (ack == Acknowledgement.OK) {
+                console.log("Acknowledgement received successfully.");
+            } else {
+                console.log("Failed to receive acknowledgement.");
+            }
+
+            socket.end();
+
         });
+        return ack;
     }
 
 }

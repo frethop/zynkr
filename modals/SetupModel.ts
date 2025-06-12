@@ -11,9 +11,10 @@ import {
 } from "obsidian";
 
 export class SetupModel extends Modal {
-	callback(ip: string) {}
+	callback(emailaddress: string, ip: string) {}
 	text: string;
 	ip: string;
+	emailaddress: string;
 	possible: number;
 	catname: string;
 	scores: Map<string, number>;
@@ -23,8 +24,10 @@ export class SetupModel extends Modal {
 	enterhandler: KeymapEventHandler;
 	field: number;
 
-	constructor(app: App, callback: (ip) => void) {
+	constructor(app: App, userName: string, IPAddress: string, callback: (un, ip) => void) {
 		super(app);
+		this.emailaddress = userName;
+		this.ip = IPAddress;
 		this.callback = callback;
 		this.scores = new Map<string, number>();
 		this.possible = 0;
@@ -33,10 +36,16 @@ export class SetupModel extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h2", { text: "Client Mode" });
+		contentEl.createEl("h2", { text: "Interactive Notes: Client Mode" });
+
+		new Setting(contentEl).setName("Your email address").addText((text) =>
+			text.setValue(this.emailaddress).onChange((value) => {
+				this.emailaddress = value;
+			})
+		);
 
 		new Setting(contentEl).setName("Destination address").addText((text) =>
-			text.setValue("").onChange((value) => {
+			text.setValue(this.ip).onChange((value) => {
 				this.ip = value;
 			})
 		);
@@ -47,7 +56,7 @@ export class SetupModel extends Modal {
 				.setCta()
 				.onClick(() => {
 					this.close();
-					this.callback(this.ip);
+					this.callback(this.emailaddress, this.ip);
 				})
 		);
 	}
