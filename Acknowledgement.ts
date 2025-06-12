@@ -20,7 +20,7 @@ export class Acknowledgement {
         console.log("Acknowledgement sent.");
     }
 
-    static async receive(socket: net.Socket): Promise<number> { 
+    static receive(socket: net.Socket): number { 
         // socket.on('data', (data: Buffer) => {
         //     console.log("Acknowledgement received = " + data[0]);
         //     return data[0];
@@ -30,16 +30,19 @@ export class Acknowledgement {
         //     return Acknowledgement.ERROR;
         // });
 
-        return new Promise((resolve, reject) => {
-            socket.on('data', (data: Buffer) => {
-                console.log("Acknowledgement received = " + data[0]);
-                resolve(data[0]);
-            });
-            socket.on('error', (err) => {
-                console.error("Error receiving acknowledgement: ", err);
-                resolve(Acknowledgement.ERROR);
-            });
-        });
-    }   
+    //     return new Promise((resolve, reject) => {
+    //         socket.on('data', (data: Buffer) => {
+    //             console.log("Acknowledgement received = " + data[0]);
+    //             resolve(data[0]);
+    //         });
+    //         socket.on('error', (err) => {
+    //             console.error("Error receiving acknowledgement: ", err);
+    //             resolve(Acknowledgement.ERROR);
+    //         });
+    //     });
+
+    return 0;
+
+        }   
      
 }

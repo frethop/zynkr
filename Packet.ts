@@ -12,13 +12,15 @@ export class Packet {
 
     command: number;
     data: any;
+    error: number;
 
     constructor(public type: number, public d: any) {
         this.command = type;
         this.data = d;
+        this.error = 0;
     }
 
-    async send( destination: string, port: number): number {
+    send( destination: string, port: number) {
         console.log("Sending packet to " + destination + ":" + port);
         console.log("Command: " + this.command);
         console.log("Data length: " + this.data.length);
@@ -27,7 +29,7 @@ export class Packet {
         let socket = new Socket();
 
         let ack = Acknowledgement.ERROR;
-        socket.connect(port, destination, async () => {
+        socket.connect(port, destination,  () => {
             console.log('Connected to server, sending packet...');
             const buffer = new Uint8Array(2 + this.data.length);
             buffer[0] = this.command;
@@ -35,20 +37,23 @@ export class Packet {
             for (let i = 0; i < this.data.length; i++) {
                 buffer[2 + i] = this.data.charCodeAt(i);
             } 
-            await socket.write(buffer);
+            socket.write(buffer);
             console.log("Packet sent, waiting for acknowledgement...");
+        })
 
-            ack = await Acknowledgement.receive(socket); 
+        socket.on('data', (data: Buffer) => {
+            ack = data[0]; 
             if (ack == Acknowledgement.OK) {
                 console.log("Acknowledgement received successfully.");
+                this.error = Acknowledgement.OK;
             } else {
                 console.log("Failed to receive acknowledgement.");
+                this.error = Acknowledgement.ERROR;
             }
 
-            socket.end();
-
+            socket.destroy();
         });
-        return ack;
+
     }
 
 }
