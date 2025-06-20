@@ -47,13 +47,13 @@ export default class ClassroomClient extends Plugin {
 
 				// Register with server
 				const packet = new Packet(Packet.CHECK, "checking connection");
-				packet.send(IPAddress, 59898);
+				packet.send(IPAddress, 4096);
 				const sent = packet.error;
 				console.log("Client: sent? = " + sent);
 				if (sent == Acknowledgement.OK) {
 					this.saveSettings();
 					const packet = new Packet(Packet.REQUEST_TO_JOIN, userName);
-					packet.send(IPAddress, 59898);
+					packet.send(IPAddress, 4096);
 
 					if (packet.error == Acknowledgement.OK) {
 						this.interacting = true;
@@ -132,7 +132,7 @@ export default class ClassroomClient extends Plugin {
 		if (this.serverIPAddress != "" ) {
 			if (kbe.code == "Enter") {
 				const packet = new Packet(Packet.TEXT, this.keystring==undefined ? " " : this.keystring);
-				packet.send(this.serverIPAddress, 59898);
+				packet.send(this.serverIPAddress, 4096);
 				this.keystring = "";
 			} else if (kbe.code != "ShiftLeft" && kbe.code != "ShiftRight" && kbe.code != "Backspace" && kbe.code != "CapsLock") {
 				this.keystring += kbe.key;
